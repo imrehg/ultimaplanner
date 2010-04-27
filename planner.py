@@ -119,7 +119,7 @@ class Lake(MapItem):
         MapItem.__init__(self, name="Lake")
         self.removable = True
         self.improve[FOOD] = 50
-
+        self.limited = 2
 
 class Rock(MapItem):
     
