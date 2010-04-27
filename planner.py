@@ -3,7 +3,7 @@
 from __future__ import division
 import random
 from copy import deepcopy 
-from math import exp
+from math import exp, sqrt
 from pylab import plot, show
 
 WOOD, STONE, IRON, FOOD, GOLD = range(5)
@@ -293,7 +293,13 @@ Buildings = [Woodcutter, Cottage, Sawmill, Mine, Foundry, Quarry, Stonemason,
 
 def scoring(value, weights):
     score = sum(i*j for i, j in zip(value, weights))
-    return score
+    sumw = sum(weights)
+    multi = 0
+    for i, v in enumerate(value):
+        b = weights[i] * v / score 
+        bb = weights[i] / sumw
+        multi += 1-sqrt(abs(b - bb))
+    return score * multi / 5
 
 def T(n, nmax):
     T0 = 500.0
