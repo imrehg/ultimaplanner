@@ -350,7 +350,6 @@ def simulation(mymap, params):
 
 data = loadfile('sample.map')
 mymap = Map(data)
-weights = [1,1,1,1]
-
+weights = [1,1,1,1,1]
 params = (weights)
 simulation(mymap, params)
