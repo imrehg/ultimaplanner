@@ -6,42 +6,35 @@ from copy import deepcopy
 from math import exp
 from pylab import plot, show
 
-WOOD, STONE, IRON, FOOD = range(4)
-Resources = [WOOD, STONE, IRON, FOOD]
+WOOD, STONE, IRON, FOOD, GOLD = range(5)
+Resources = [WOOD, STONE, IRON, FOOD, GOLD]
 Terraforming = True
 
 class Map(object):
     """ Map layout
-
-    Legend:
-    Set pieces:
-    F : farmland (empty space, can build)
-    X : wall
-    W : forrest
-    R : rocks
-    I : iron
-    L : lake
-    T : town hall
-    Buildings
-    C : castle
-    H : woodcutter's hut
-    O : cottage
-    Q : quarry
-    A : farm
-    M : iron mine
-    S : townhouse
-    ...
     """
 
     def __init__(self, data):
         self.size = (len(data[0]), len(data))
         self.data = data
-        self.legend = {'X' : Wall,
-                       'F' : Field,
-                       'W' : Forrest,
-                       'H' : Woodcutter,
-                       'S' : Sawmill,
-                       'C' : Cottage
+        self.legend = {'#' : Wall,
+                       '-' : Field,
+                       '.' : Forrest,
+                       ':' : Rock,
+                       ',' : Iron,
+                       ';' : Lake,
+                       'W' : Woodcutter,
+                       'L' : Sawmill,
+                       'C' : Cottage,
+                       'Q' : Quarry,
+                       'A' : Stonemason,
+                       'I' : Mine,
+                       'D' : Foundry,
+                       'F' : Farm,
+                       'M' : Mill,
+                       'U' : Townhouse,
+                       'P' : Marketplace,
+                       'T' : Townhall,
                        }
         self.reverselegend = dict([(v, k) for (k, v) in self.legend.iteritems()])
         self.setmap(data)
@@ -144,8 +137,8 @@ class MapItem(object):
     def __init__(self, name):
 #        self._creator = creator
         self.name = name
-        self.produce = [0, 0, 0, 0]
-        self.improve = [0, 0, 0, 0]
+        self.produce = [0] * len(Resources)
+        self.improve = [0] * len(Resources)
         self.affectedby = []
         self.limited = 0
         self.buildable = False
@@ -156,7 +149,6 @@ class Wall(MapItem):
 
     def __init__(self):
         MapItem.__init__(self, name="Wall")
-
 
 class Field(MapItem):
 
@@ -172,7 +164,6 @@ class Forrest(MapItem):
         MapItem.__init__(self, name="Forrest")
         self.removable = Terraforming
         self.improve[WOOD] = 25
-        
 
 class Lake(MapItem):
     
@@ -196,10 +187,10 @@ class Iron(MapItem):
         self.removable = Terraforming
         self.improve[IRON] = 25
 
-class TownHall(MapItem):
+class Townhall(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="TownHall")
+        MapItem.__init__(self, name="Townhall")
 
 class Woodcutter(MapItem):
 
@@ -235,7 +226,7 @@ class Mine(MapItem):
         MapItem.__init__(self, name="Mine")
         self.buildable = True
         self.removable = True
-        self.produce[Iron] = 300
+        self.produce[IRON] = 300
 
 class Foundry(MapItem):
 
@@ -243,11 +234,62 @@ class Foundry(MapItem):
         MapItem.__init__(self, name="Foundry")
         self.buildable = True
         self.removable = True
-        self.improve[Iron] = 75
+        self.improve[IRON] = 75
         self.limited = 1
 
+class Quarry(MapItem):
 
-Buildings = [Woodcutter, Cottage, Sawmill]
+    def __init__(self):
+        MapItem.__init__(self, name="Quarry")
+        self.buildable = True
+        self.removable = True
+        self.produce[STONE] = 300
+
+class Stonemason(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Stonemason")
+        self.buildable = True
+        self.removable = True
+        self.improve[STONE] = 75
+        self.limited = 1
+
+class Farm(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Farm")
+        self.buildable = True
+        self.removable = True
+        self.produce[FOOD] = 400
+
+class Mill(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Mill")
+        self.buildable = True
+        self.removable = True
+        self.improve[FOOD] = 75
+        self.limited = 1
+
+class Townhouse(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Townhouse")
+        self.buildable = True
+        self.removable = True
+        self.produce[GOLD] = 400
+
+class Marketplace(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Marketplace")
+        self.buildable = True
+        self.removable = True
+        self.improve[GOLD] = 20
+        self.limited = 1
+
+Buildings = [Woodcutter, Cottage, Sawmill, Mine, Foundry, Quarry, Stonemason,
+             Farm, Mill, Townhouse, Marketplace]
 
 def scoring(value, weights):
     score = sum(i*j for i, j in zip(value, weights))
