@@ -295,6 +295,8 @@ def scoring(value, weights):
     score = sum(i*j for i, j in zip(value, weights))
     sumw = sum(weights)
     multi = 0
+    if score == 0:
+        return 0
     for i, v in enumerate(value):
         b = weights[i] * v / score 
         bb = weights[i] / sumw
