@@ -229,6 +229,23 @@ class Sawmill(MapItem):
         self.improve[WOOD] = 75
         self.limited = 1
 
+class Mine(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Mine")
+        self.buildable = True
+        self.removable = True
+        self.produce[Iron] = 300
+
+class Foundry(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Foundry")
+        self.buildable = True
+        self.removable = True
+        self.improve[Iron] = 75
+        self.limited = 1
+
 
 Buildings = [Woodcutter, Cottage, Sawmill]
 
