@@ -165,7 +165,7 @@ class Sawmill(MapItem):
         MapItem.__init__(self, name="Sawmill")
         self.buildable = True
         self.removable = True
-        self.improve[WOOD] = 100
+        self.improve[WOOD] = 75
         self.limited = 1
 
 
