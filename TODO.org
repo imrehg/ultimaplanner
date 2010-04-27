@@ -1,0 +1,11 @@
+* Calculation
+** Resources optimizatiom
+   Wood, Rocks, Iron, Food, Gold
+** Military optimization
+   Number of units, speed...
+** Find good relative weights
+* Compatibility
+** Make map input/output compatible with City Planner
+   http://www.lordofultima.com/en/forum/showthread.php?tid=40077&page=1
+   + Map items the same (import/export)
+   + Graphics are the same
