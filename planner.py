@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 
+WOOD, STONE, IRON, FOOD = range(4)
+Resources = [WOOD, STONE, IRON, FOOD]
 
 class Map(object):
     """ Map layout
@@ -28,15 +30,29 @@ class Map(object):
     def __init__(self, data):
         self.size = (len(data[0]), len(data))
         self.data = data
+        self.legend = {'X' : Wall(),
+                       'F' : Field(),
+                       'W' : Forrest(),
+                       }
+        self.reverselegend = dict([(v, k) for (k, v) in self.legend.iteritems()])
+        self.setmap(data)
         self.printmap()
-        self.nobuild = ['X', 'F', 'R', 'I', 'L', 'T']
 
     def setmap(self, data):
-        pass
+        self.mapped = []
+        for y in xrange(self.getysize()):
+            temp = []
+            for x in xrange(self.getxsize()):
+                temp.append(self.legend[data[y][x]])
+            self.mapped.append(temp)
 
     def printmap(self):
         for line in xrange(self.getysize()):
-            print "".join(self.data[line])
+            marks = []
+            for point in xrange(self.getxsize()):
+                marks.append(self.reverselegend[self.mapped[line][point]])
+#                print marks
+            print "".join(marks)
         pass
 
     def buildsites(self):
@@ -49,6 +65,7 @@ class Map(object):
 
     def getysize(self):
         return self.size[1]
+
 
 def loadfile(filename):
     datafile = open(filename, "r")
@@ -65,57 +82,91 @@ def loadfile(filename):
 
 class MapItem(object):
 
-    def __init__(self, name, buildable):
+    def __init__(self, name):
         self.name = name
-        self.buildable = buildable
+        self.produce = {WOOD : 0, STONE : 0, IRON : 0, FOOD : 0}
+        self.improve = {WOOD : 0, STONE : 0, IRON : 0, FOOD : 0}
+        self.limited = 0
+        self.buildable = False
+        self.removable = False
 
-    def improve(self, other):
-        return 0
-        
 
 class Wall(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Wall", buildable=False)
+        MapItem.__init__(self, name="Wall")
 
+
+class Field(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Field")
+        self.buildable = True
+        self.removable = True
+        self.improve[FOOD] = 25
 
 class Forrest(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Forrest", buildable=True)
-
+        MapItem.__init__(self, name="Forrest")
+        self.removable = True
+        self.improve[WOOD] = 25
+        
 
 class Lake(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Lake", buildable=False)
+        MapItem.__init__(self, name="Lake")
+        self.removable = True
+        self.improve[FOOD] = 50
 
 
 class Rock(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Rock", buildable=False)
+        MapItem.__init__(self, name="Rock")
+        self.removable = True
+        self.improve[STONE] = 25
 
 class Iron(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Iron", buildable=False)
+        MapItem.__init__(self, name="Iron")
+        self.removable = True
+        self.improve[IRON] = 25
 
 class TownHall(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="TownHall", buildable=False)
+        MapItem.__init__(self, name="TownHall")
 
 class Woodcutter(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="WoodCutter", buildable=True)
+        MapItem.__init__(self, name="WoodCutter")
+        self.buildable = True
+        self.removable = True
+        self.produce[WOOD] = 300
 
-class Cottage:
+class Cottage(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Cottage", buildable=True)
+        MapItem.__init__(self, name="Cottage")
+        self.buildable = True
+        self.removable = True
+        self.improve[WOOD] = 50
+        self.improve[STONE] = 50
+        self.improve[IRON] = 50
+        self.improve[FOOD] = 50
 
+class Sawmill(MapItem):
+
+    def __init__(self):
+        MapItem.__init__(self, name="Sawmill")
+        self.buildable = True
+        self.removable = True
+        self.improve[WOOD] = 100
+        self.limited = 1
 
 
 data = loadfile('sample.map')
