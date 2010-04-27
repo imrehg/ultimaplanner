@@ -4,6 +4,7 @@ from __future__ import division
 import random
 from copy import deepcopy 
 from math import exp
+from pylab import plot, show
 
 WOOD, STONE, IRON, FOOD = range(4)
 Resources = [WOOD, STONE, IRON, FOOD]
@@ -259,7 +260,8 @@ def simulation(mymap, params):
     naltpos = len(altpos)
     nsim = 1000
     value = currmap.getoutput()
-    score = scoring(value, weights)    
+    score = scoring(value, weights)
+    scorehist = [score]
     for n in xrange(nsim):
         pos = random.randint(0, naltpos-1)
         newmap = deepcopy(currmap)
@@ -274,9 +276,11 @@ def simulation(mymap, params):
             value = newvalue
             score = newscore
             currmap = deepcopy(newmap)
-           
+        scorehist.append(score)
     currmap.printmap()
     print value, score
+    plot(scorehist)
+    show()
 
 data = loadfile('sample.map')
 mymap = Map(data)
