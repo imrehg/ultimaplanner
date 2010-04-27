@@ -8,6 +8,7 @@ from pylab import plot, show
 
 WOOD, STONE, IRON, FOOD = range(4)
 Resources = [WOOD, STONE, IRON, FOOD]
+Terraforming = True
 
 class Map(object):
     """ Map layout
@@ -169,7 +170,7 @@ class Forrest(MapItem):
 
     def __init__(self):
         MapItem.__init__(self, name="Forrest")
-        self.removable = True
+        self.removable = Terraforming
         self.improve[WOOD] = 25
         
 
@@ -177,7 +178,7 @@ class Lake(MapItem):
     
     def __init__(self):
         MapItem.__init__(self, name="Lake")
-        self.removable = True
+        self.removable = Terraforming
         self.improve[FOOD] = 50
         self.limited = 2
 
@@ -185,14 +186,14 @@ class Rock(MapItem):
     
     def __init__(self):
         MapItem.__init__(self, name="Rock")
-        self.removable = True
+        self.removable = Terraforming
         self.improve[STONE] = 25
 
 class Iron(MapItem):
     
     def __init__(self):
         MapItem.__init__(self, name="Iron")
-        self.removable = True
+        self.removable = Terraforming
         self.improve[IRON] = 25
 
 class TownHall(MapItem):
