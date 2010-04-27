@@ -1,4 +1,6 @@
 * Calculation
+** Being able to remove / put back resources in the simulation
+** Optimize code
 ** Resources optimizatiom
    Wood, Rocks, Iron, Food, Gold
 ** Military optimization
