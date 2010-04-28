@@ -72,38 +72,36 @@ class Map(object):
         for y in xrange(self.getysize()):
             for x in xrange(self.getxsize()):
                 building = self.mapped[y][x]
-                building.affectedby = []
-        for y in xrange(self.getysize()):
-            for x in xrange(self.getxsize()):
-                building = self.mapped[y][x]
-                if (sum(building.improve) > 0):
-                    neigh = self.neighbours((x,y))
-                    for i in neigh:
-                        n = self.mapped[i[1]][i[0]]
-                        affected = False
-                        for r in Resources:
-                            if (building.improve[r] > 0) and (n.produce[r] >0):
-                                affected = True
-                        if affected and building.limited == 0 and (building not in n.affectedby):
-                            n.affectedby.append(building)
-                        elif affected and building.limited > 0:
-                            num = 0
-                            for aff in n.affectedby:
-                                if isinstance(aff, type(building)):
-                                    num += 1
-                            if num < building.limited:
-                                n.affectedby.append(building)
-        for y in xrange(self.getysize()):
-            for x in xrange(self.getxsize()):
-                building = self.mapped[y][x]
-                effect = [0] * len(Resources)
                 if sum(building.produce) > 0:
+                    self.updateaffected((x,y))
+                    effect = [0] * len(Resources)
                     for i, aff in enumerate(building.affectedby):
                         for res in Resources:
                             effect[res] += aff.improve[res]
-                for i in xrange(len(Resources)):
-                    out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
+                    for i in xrange(len(Resources)):
+                        out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
         return out
+
+    def updateaffected(self, pos):
+        x, y = pos
+        building = self.mapped[y][x]
+        building.affected = []
+        for neighpos in self.neighbours(pos):
+            neigh = self.mapped[neighpos[1]][neighpos[0]]
+            affected = False
+            for r in Resources:
+                if (neigh.improve[r] > 0) and (building.produce[r] > 0):
+                    affected = True
+                if affected and neigh.limited == 0 and \
+                        (neigh not in building.affectedby):
+                    building.affectedby.append(neigh)
+                elif affected and neigh.limited > 0:
+                    num = 0
+                    for aff in building.affectedby:
+                        if isinstance(aff, type(neigh)):
+                            num += 1
+                    if num < neigh.limited:
+                        building.affectedby.append(neigh)
 
     def neighbours(self, pos):
         x, y = pos
