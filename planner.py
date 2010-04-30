@@ -10,6 +10,9 @@ WOOD, STONE, IRON, FOOD, GOLD = range(5)
 Resources = [WOOD, STONE, IRON, FOOD, GOLD]
 Terraforming = True
 
+def addlists(a, b):
+    return map(sum, zip(*[a, b]))
+
 class Map(object):
     """ Map layout
     """
@@ -74,12 +77,17 @@ class Map(object):
                 building = self.mapped[y][x]
                 if sum(building.produce) > 0:
                     self.updateaffected((x,y))
-                    effect = [0] * len(Resources)
-                    for i, aff in enumerate(building.affectedby):
-                        for res in Resources:
-                            effect[res] += aff.improve[res]
-                    for i in xrange(len(Resources)):
-                        out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
+                    out = addlists(out, self.getscore(building))
+        return out
+
+    def getscore(self, building):
+        effect = [0] * len(Resources)
+        out = [0] * len(Resources)
+        for i, aff in enumerate(building.affectedby):
+            for res in Resources:
+                effect[res] += aff.improve[res]
+            for i in xrange(len(Resources)):
+                out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
         return out
 
     def updateaffected(self, pos):
