@@ -13,6 +13,9 @@ Terraforming = True
 def addlists(a, b):
     return map(sum, zip(*[a, b]))
 
+def negate(a):
+    return [-1 * x for x in a]
+
 class Map(object):
     """ Map layout
     """
@@ -41,6 +44,7 @@ class Map(object):
                        }
         self.reverselegend = dict([(v, k) for (k, v) in self.legend.iteritems()])
         self.setmap(data)
+        self.score = self.getoutput()
 
     def setmap(self, data):
         self.mapped = []
@@ -110,6 +114,19 @@ class Map(object):
                             num += 1
                     if num < neigh.limited:
                         building.affectedby.append(neigh)
+
+    def updatemap(self, pos, building):
+        x, y = pos
+        self.mapped[y][x] = building
+        scoremodify = [0] * len(Resources)
+        for neigh in self.neighbours(pos):
+            nx, ny = neigh
+            scoremodify = addlists(negate(self.getscore(self.mapped[ny][nx])),
+                                   scoremodify)
+            self.updateaffected(neigh)
+            scoremodify = addlists(self.getscore(self.mapped[ny][nx]),
+                                   scoremodify)
+        self.score = addlists(self.score, scoremodify)
 
     def neighbours(self, pos):
         x, y = pos
