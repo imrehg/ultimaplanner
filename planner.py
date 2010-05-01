@@ -356,7 +356,7 @@ def simulation(mymap, params):
                 altpos.append((x,y))
     naltpos = len(altpos)
     nsim = 1000
-    value = currmap.getoutput()
+    value = currmap.score
     score = scoring(value, weights)
     scorehist = [score]
     for n in xrange(nsim):
@@ -366,8 +366,8 @@ def simulation(mymap, params):
         possible = Buildings[:]
 #        possible.append(startmap[y][x])
         newbuild = random.randint(0, len(possible)-1)
-        newmap.mapped[y][x] = possible[newbuild]()
-        newvalue = newmap.getoutput()
+        newmap.updatemap((x,y), possible[newbuild]())
+        newvalue = newmap.score
         newscore = scoring(newvalue, weights)
         if newscore > score or badbutgood(score, newscore, T(n, nsim)):
             value = newvalue
