@@ -117,8 +117,14 @@ class Map(object):
 
     def updatemap(self, pos, building):
         x, y = pos
-        self.mapped[y][x] = building
         scoremodify = [0] * len(Resources)
+        scoremodify = addlists(negate(self.getscore(self.mapped[y][x])),
+                               scoremodify)
+        origb = self.mapped[y][x].name
+        self.mapped[y][x] = building
+        self.updateaffected(pos)
+        scoremodify = addlists(self.getscore(self.mapped[y][x]),
+                               scoremodify)
         for neigh in self.neighbours(pos):
             nx, ny = neigh
             scoremodify = addlists(negate(self.getscore(self.mapped[ny][nx])),
