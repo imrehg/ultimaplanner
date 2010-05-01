@@ -86,8 +86,8 @@ class Map(object):
         for i, aff in enumerate(building.affectedby):
             for res in Resources:
                 effect[res] += aff.improve[res]
-            for i in xrange(len(Resources)):
-                out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
+        for i in xrange(len(Resources)):
+            out[i] += int(building.produce[i]*(1 + effect[i]/100.0))
         return out
 
     def updateaffected(self, pos):
