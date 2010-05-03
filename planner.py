@@ -2,7 +2,7 @@
 
 from __future__ import division
 import random
-from copy import deepcopy 
+from copy import copy
 from math import exp, sqrt
 from pylab import plot, show
 
@@ -22,27 +22,6 @@ class Map(object):
 
     def __init__(self, data):
         self.size = (len(data[0]), len(data))
-        self.data = data
-        self.legend = {'#' : Wall,
-                       '-' : Field,
-                       '.' : Forrest,
-                       ':' : Rock,
-                       ',' : Iron,
-                       ';' : Lake,
-                       'W' : Woodcutter,
-                       'L' : Sawmill,
-                       'C' : Cottage,
-                       'Q' : Quarry,
-                       'A' : Stonemason,
-                       'I' : Mine,
-                       'D' : Foundry,
-                       'F' : Farm,
-                       'M' : Mill,
-                       'U' : Townhouse,
-                       'P' : Marketplace,
-                       'T' : Townhall,
-                       }
-        self.reverselegend = dict([(v, k) for (k, v) in self.legend.iteritems()])
         self.setmap(data)
         self.score = self.getoutput()
 
@@ -51,15 +30,14 @@ class Map(object):
         for y in xrange(self.getysize()):
             temp = []
             for x in xrange(self.getxsize()):
-                temp.append(self.legend[data[y][x]]())
+                temp.append(legend[data[y][x]]())
             self.mapped.append(temp)
 
     def printmap(self):
         for line in xrange(self.getysize()):
             marks = []
             for point in xrange(self.getxsize()):
-                marks.append(self.reverselegend[type(self.mapped[line][point])])
-#                print marks
+                marks.append(reverselegend[type(self.mapped[line][point])])
             print "".join(marks)
         pass
 
@@ -80,14 +58,16 @@ class Map(object):
             for x in xrange(self.getxsize()):
                 building = self.mapped[y][x]
                 if sum(building.produce) > 0:
-                    self.updateaffected((x,y))
-                    out = addlists(out, self.getscore(building))
+                    out = addlists(out, self.getscore((x, y)))
         return out
 
-    def getscore(self, building):
+    def getscore(self, pos):
         effect = [0] * len(Resources)
         out = [0] * len(Resources)
-        for i, aff in enumerate(building.affectedby):
+        x, y = pos
+        building = self.mapped[y][x]
+        affectedby = self.updateaffected(pos)
+        for i, aff in enumerate(affectedby):
             for res in Resources:
                 effect[res] += aff.improve[res]
         for i in xrange(len(Resources)):
@@ -97,7 +77,7 @@ class Map(object):
     def updateaffected(self, pos):
         x, y = pos
         building = self.mapped[y][x]
-        building.affected = []
+        affectedby = []
         for neighpos in self.neighbours(pos):
             neigh = self.mapped[neighpos[1]][neighpos[0]]
             affected = False
@@ -105,34 +85,35 @@ class Map(object):
                 if (neigh.improve[r] > 0) and (building.produce[r] > 0):
                     affected = True
                 if affected and neigh.limited == 0 and \
-                        (neigh not in building.affectedby):
-                    building.affectedby.append(neigh)
+                        (neigh not in affectedby):
+                    affectedby.append(neigh)
                 elif affected and neigh.limited > 0:
                     num = 0
-                    for aff in building.affectedby:
+                    for aff in affectedby:
                         if isinstance(aff, type(neigh)):
                             num += 1
                     if num < neigh.limited:
-                        building.affectedby.append(neigh)
+                        affectedby.append(neigh)
+        return affectedby
 
     def updatemap(self, pos, building):
         x, y = pos
-        scoremodify = [0] * len(Resources)
-        scoremodify = addlists(negate(self.getscore(self.mapped[y][x])),
-                               scoremodify)
-        origb = self.mapped[y][x].name
+        # scoremodify = [0] * len(Resources)
+        # # Before
+        # scoremodify = addlists(negate(self.getscore(pos)),
+        #                        scoremodify)
+        # for neigh in self.neighbours(pos):
+        #     scoremodify = addlists(negate(self.getscore(neigh)),
+        #                            scoremodify)
+        # # After
         self.mapped[y][x] = building
-        self.updateaffected(pos)
-        scoremodify = addlists(self.getscore(self.mapped[y][x]),
-                               scoremodify)
-        for neigh in self.neighbours(pos):
-            nx, ny = neigh
-            scoremodify = addlists(negate(self.getscore(self.mapped[ny][nx])),
-                                   scoremodify)
-            self.updateaffected(neigh)
-            scoremodify = addlists(self.getscore(self.mapped[ny][nx]),
-                                   scoremodify)
-        self.score = addlists(self.score, scoremodify)
+        # scoremodify = addlists(self.getscore(pos),
+        #                        scoremodify)
+        # for neigh in self.neighbours(pos):
+        #     scoremodify = addlists(self.getscore(neigh),
+        #                            scoremodify)
+        # self.score = addlists(self.score, scoremodify)
+        self.score = self.getoutput()
 
     def neighbours(self, pos):
         x, y = pos
@@ -163,12 +144,9 @@ def loadfile(filename):
 
 class MapItem(object):
 
-    def __init__(self, name):
-#        self._creator = creator
-        self.name = name
+    def __init__(self):
         self.produce = [0] * len(Resources)
         self.improve = [0] * len(Resources)
-        self.affectedby = []
         self.limited = 0
         self.buildable = False
         self.removable = False
@@ -177,12 +155,12 @@ class MapItem(object):
 class Wall(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Wall")
+        MapItem.__init__(self)
 
 class Field(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Field")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[FOOD] = 25
@@ -190,14 +168,14 @@ class Field(MapItem):
 class Forrest(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Forrest")
+        MapItem.__init__(self)
         self.removable = Terraforming
         self.improve[WOOD] = 25
 
 class Lake(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Lake")
+        MapItem.__init__(self)
         self.removable = Terraforming
         self.improve[FOOD] = 50
         self.limited = 2
@@ -205,26 +183,26 @@ class Lake(MapItem):
 class Rock(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Rock")
+        MapItem.__init__(self)
         self.removable = Terraforming
         self.improve[STONE] = 25
 
 class Iron(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Iron")
+        MapItem.__init__(self)
         self.removable = Terraforming
         self.improve[IRON] = 25
 
 class Townhall(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Townhall")
+        MapItem.__init__(self)
 
 class Woodcutter(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="WoodCutter")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.produce[WOOD] = 300
@@ -232,7 +210,7 @@ class Woodcutter(MapItem):
 class Cottage(MapItem):
     
     def __init__(self):
-        MapItem.__init__(self, name="Cottage")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[WOOD] = 50
@@ -243,7 +221,7 @@ class Cottage(MapItem):
 class Sawmill(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Sawmill")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[WOOD] = 75
@@ -252,7 +230,7 @@ class Sawmill(MapItem):
 class Mine(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Mine")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.produce[IRON] = 300
@@ -260,7 +238,7 @@ class Mine(MapItem):
 class Foundry(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Foundry")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[IRON] = 75
@@ -269,7 +247,7 @@ class Foundry(MapItem):
 class Quarry(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Quarry")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.produce[STONE] = 300
@@ -277,7 +255,7 @@ class Quarry(MapItem):
 class Stonemason(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Stonemason")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[STONE] = 75
@@ -286,7 +264,7 @@ class Stonemason(MapItem):
 class Farm(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Farm")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.produce[FOOD] = 400
@@ -294,7 +272,7 @@ class Farm(MapItem):
 class Mill(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Mill")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[FOOD] = 75
@@ -303,7 +281,7 @@ class Mill(MapItem):
 class Townhouse(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Townhouse")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.produce[GOLD] = 400
@@ -311,7 +289,7 @@ class Townhouse(MapItem):
 class Marketplace(MapItem):
 
     def __init__(self):
-        MapItem.__init__(self, name="Marketplace")
+        MapItem.__init__(self)
         self.buildable = True
         self.removable = True
         self.improve[GOLD] = 20
@@ -319,6 +297,27 @@ class Marketplace(MapItem):
 
 Buildings = [Woodcutter, Cottage, Sawmill, Mine, Foundry, Quarry, Stonemason,
              Farm, Mill, Townhouse, Marketplace]
+
+legend = {'#' : Wall,
+          '-' : Field,
+          '.' : Forrest,
+          ':' : Rock,
+          ',' : Iron,
+          ';' : Lake,
+          'W' : Woodcutter,
+          'L' : Sawmill,
+          'C' : Cottage,
+          'Q' : Quarry,
+          'A' : Stonemason,
+          'I' : Mine,
+          'D' : Foundry,
+          'F' : Farm,
+          'M' : Mill,
+          'U' : Townhouse,
+          'P' : Marketplace,
+          'T' : Townhall,
+          }
+reverselegend = dict([(v, k) for (k, v) in legend.iteritems()])
 
 def scoring(value, weights):
     score = sum(i*j for i, j in zip(value, weights))
@@ -344,8 +343,8 @@ def badbutgood(e0, e1, temp):
     
 
 def simulation(mymap, params):
-    startmap = deepcopy(mymap)
-    currmap = deepcopy(mymap)
+    startmap = copy(mymap)
+    currmap = copy(mymap)
     weights = params
     maxx = mymap.getxsize()
     maxy = mymap.getysize()
@@ -361,10 +360,9 @@ def simulation(mymap, params):
     scorehist = [score]
     for n in xrange(nsim):
         pos = random.randint(0, naltpos-1)
-        newmap = deepcopy(currmap)
+        newmap = copy(currmap)
         x,y = (altpos[pos][0], altpos[pos][1])
         possible = Buildings[:]
-#        possible.append(startmap[y][x])
         newbuild = random.randint(0, len(possible)-1)
         newmap.updatemap((x,y), possible[newbuild]())
         newvalue = newmap.score
@@ -372,7 +370,7 @@ def simulation(mymap, params):
         if newscore > score or badbutgood(score, newscore, T(n, nsim)):
             value = newvalue
             score = newscore
-            currmap = deepcopy(newmap)
+            currmap = copy(newmap)
         scorehist.append(score)
     currmap.printmap()
     print value, score
