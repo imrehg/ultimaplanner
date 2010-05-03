@@ -379,8 +379,12 @@ def simulation(mymap, params):
     plot(scorehist)
     show()
 
-data = loadfile('sample.map')
-mymap = Map(data)
-weights = [1,1,1,1,1]
-params = (weights)
-simulation(mymap, params)
+def main():
+    data = loadfile('sample.map')
+    mymap = Map(data)
+    weights = [1,1,1,1,1]
+    params = (weights)
+    simulation(mymap, params)
+
+if __name__ == '__main__':
+    main()
